@@ -1,0 +1,61 @@
+stages:
+  - build
+  - test
+  - security_scan
+
+variables:
+  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+  DOCKER_TLS_CERTDIR: "/certs"
+
+
+# Build Docker images and push to GitLab Registry
+build:
+  stage: build
+
+  image: docker:27
+
+  services:
+    - docker:27-dind
+
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+  script:
+    - docker build -t "$BACKEND_IMAGE" ./backend
+    - docker build -t "$FRONTEND_IMAGE" ./frontend
+    - docker push "$BACKEND_IMAGE"
+    - docker push "$FRONTEND_IMAGE"
+
+
+# Run automated backend tests
+test:
+  stage: test
+
+  image: node:24-slim
+
+  script:
+    - cd backend
+    - npm ci
+    - npm test
+
+# Scan backend image for CRITICAL vulnerabilities
+security_scan:
+  stage: security_scan
+
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+
+  services:
+    - docker:27-dind
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
+  before_script:
+    - trivy --version
+
+  script:
+    - trivy image --exit-code 1 --severity CRITICAL "$BACKEND_IMAGE"
