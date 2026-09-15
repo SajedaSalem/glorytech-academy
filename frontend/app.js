@@ -1,128 +1,323 @@
-const courseContainer = document.getElementById("course-container");
-const courseCount = document.getElementById("course-count");
-const searchInput = document.getElementById("search");
-const vendorFilter = document.getElementById("vendor-filter");
-const backendStatus = document.getElementById("backend-status");
+const courseContainer =
+  document.getElementById("course-container");
+
+const courseCount =
+  document.getElementById("course-count");
+
+const searchInput =
+  document.getElementById("search");
+
+const vendorFilter =
+  document.getElementById("vendor-filter");
+
+const levelFilter =
+  document.getElementById("level-filter");
+
+const categoryFilter =
+  document.getElementById("category-filter");
+
+const backendStatus =
+  document.getElementById("backend-status");
+
+const clearFiltersButton =
+  document.getElementById("clear-filters");
 
 let courses = [];
 
-// Check if backend is reachable
+
+/*
+  Check whether the backend API is reachable.
+*/
 async function checkBackendHealth() {
+
   try {
-    const response = await fetch("/api/health");
+
+    const response =
+      await fetch("/api/health");
 
     if (!response.ok) {
-      throw new Error("Backend unavailable");
+      throw new Error(
+        "Backend health check failed"
+      );
     }
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    backendStatus.textContent = `Backend: ${data.status}`;
-    backendStatus.className = "status-online";
+    backendStatus.textContent =
+      `● Backend ${data.status}`;
+
+    backendStatus.className =
+      "status-badge status-online";
+
   } catch (error) {
-    backendStatus.textContent = "Backend: offline";
-    backendStatus.className = "status-offline";
+
+    backendStatus.textContent =
+      "● Backend offline";
+
+    backendStatus.className =
+      "status-badge status-offline";
   }
 }
 
-// Load courses from backend
+
+/*
+  Load all course data from the backend.
+*/
 async function loadCourses() {
+
   try {
-    const response = await fetch("/api/courses");
+
+    const response =
+      await fetch("/api/courses");
 
     if (!response.ok) {
-      throw new Error("Could not load courses");
+      throw new Error(
+        "Could not load courses"
+      );
     }
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    courses = data.courses;
+    courses =
+      data.courses;
 
     renderCourses(courses);
+
   } catch (error) {
+
     courseContainer.innerHTML = `
       <div class="error-message">
-        Unable to load courses from the backend.
+        <strong>Unable to load courses.</strong>
+        <br>
+        The backend service could not be reached.
       </div>
     `;
 
-    courseCount.textContent = "";
+    courseCount.textContent =
+      "Courses unavailable";
   }
 }
 
-// Display courses on the page
+
+/*
+  Render a list of course cards.
+*/
 function renderCourses(courseList) {
+
   courseContainer.innerHTML = "";
 
-  courseCount.textContent = `${courseList.length} course(s) available`;
+  courseCount.textContent =
+    `${courseList.length} course${
+      courseList.length === 1 ? "" : "s"
+    } available`;
 
   if (courseList.length === 0) {
+
     courseContainer.innerHTML = `
-      <p>No courses found.</p>
+      <div class="empty-state">
+        <h3>No courses found</h3>
+        <p>
+          Try changing your search or filters.
+        </p>
+      </div>
     `;
+
     return;
   }
 
   courseList.forEach(course => {
-    const card = document.createElement("article");
 
-    card.className = "course-card";
+    const card =
+      document.createElement("article");
+
+    card.className =
+      "course-card";
 
     card.innerHTML = `
-      <span class="vendor-badge">${course.vendor}</span>
+      <div class="course-card-top">
 
-      <h2>${course.title}</h2>
+        <span class="vendor-badge">
+          ${course.vendor}
+        </span>
 
-      <p>
-        <strong>Exam:</strong>
-        ${course.examCode}
+        <span class="category-badge">
+          ${course.category}
+        </span>
+
+      </div>
+
+      <h3>
+        ${course.title}
+      </h3>
+
+      <p class="course-description">
+        ${course.description}
       </p>
 
-      <p>
-        <strong>Level:</strong>
-        ${course.level}
-      </p>
+      <div class="course-details">
 
-      <p>
-        <strong>Category:</strong>
-        ${course.category}
-      </p>
+        <div class="detail">
+          <span class="detail-label">
+            Exam
+          </span>
 
-      <p>
-        <strong>Duration:</strong>
-        ${course.durationHours} hours
-      </p>
+          <span class="detail-value">
+            ${course.examCode}
+          </span>
+        </div>
 
-      <p>${course.description}</p>
+        <div class="detail">
+          <span class="detail-label">
+            Level
+          </span>
+
+          <span class="detail-value">
+            ${course.level}
+          </span>
+        </div>
+
+        <div class="detail">
+          <span class="detail-label">
+            Duration
+          </span>
+
+          <span class="detail-value">
+            ${course.durationHours} hours
+          </span>
+        </div>
+
+        <div class="detail">
+          <span class="detail-label">
+            Vendor
+          </span>
+
+          <span class="detail-value">
+            ${course.vendor}
+          </span>
+        </div>
+
+      </div>
     `;
 
     courseContainer.appendChild(card);
   });
 }
 
-// Search and filter courses
+
+/*
+  Apply all active filters.
+*/
 function filterCourses() {
-  const searchTerm = searchInput.value.toLowerCase();
-  const selectedVendor = vendorFilter.value;
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch =
-      course.title.toLowerCase().includes(searchTerm) ||
-      course.vendor.toLowerCase().includes(searchTerm) ||
-      course.examCode.toLowerCase().includes(searchTerm);
+  const searchTerm =
+    searchInput.value
+      .trim()
+      .toLowerCase();
 
-    const matchesVendor =
-      selectedVendor === "" ||
-      course.vendor === selectedVendor;
+  const selectedVendor =
+    vendorFilter.value;
 
-    return matchesSearch && matchesVendor;
-  });
+  const selectedLevel =
+    levelFilter.value;
+
+  const selectedCategory =
+    categoryFilter.value;
+
+  const filteredCourses =
+    courses.filter(course => {
+
+      const matchesSearch =
+        course.title
+          .toLowerCase()
+          .includes(searchTerm) ||
+
+        course.vendor
+          .toLowerCase()
+          .includes(searchTerm) ||
+
+        course.examCode
+          .toLowerCase()
+          .includes(searchTerm) ||
+
+        course.category
+          .toLowerCase()
+          .includes(searchTerm);
+
+      const matchesVendor =
+        selectedVendor === "" ||
+        course.vendor === selectedVendor;
+
+      const matchesLevel =
+        selectedLevel === "" ||
+        course.level === selectedLevel;
+
+      const matchesCategory =
+        selectedCategory === "" ||
+        course.category === selectedCategory;
+
+      return (
+        matchesSearch &&
+        matchesVendor &&
+        matchesLevel &&
+        matchesCategory
+      );
+    });
 
   renderCourses(filteredCourses);
 }
 
-searchInput.addEventListener("input", filterCourses);
-vendorFilter.addEventListener("change", filterCourses);
 
+/*
+  Reset all search/filter controls.
+*/
+function clearFilters() {
+
+  searchInput.value = "";
+
+  vendorFilter.value = "";
+
+  levelFilter.value = "";
+
+  categoryFilter.value = "";
+
+  renderCourses(courses);
+}
+
+
+/*
+  Event listeners
+*/
+searchInput.addEventListener(
+  "input",
+  filterCourses
+);
+
+vendorFilter.addEventListener(
+  "change",
+  filterCourses
+);
+
+levelFilter.addEventListener(
+  "change",
+  filterCourses
+);
+
+categoryFilter.addEventListener(
+  "change",
+  filterCourses
+);
+
+clearFiltersButton.addEventListener(
+  "click",
+  clearFilters
+);
+
+
+/*
+  Initial application startup
+*/
 checkBackendHealth();
+
 loadCourses();

@@ -3,46 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>GloryTech Academy</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <header>
-    <h1>GloryTech Academy</h1>
-    <p>Certification Training Platform</p>
 
-    <div id="backend-status">
-      Checking backend...
+  <header class="hero">
+    <div class="hero-content">
+
+      <div class="brand">
+        <span class="logo">GT</span>
+
+        <div>
+          <h1>GloryTech Academy</h1>
+          <p>Professional Certification Training Platform</p>
+        </div>
+      </div>
+
+      <div id="backend-status" class="status-badge">
+        Checking backend...
+      </div>
+
     </div>
   </header>
 
   <main>
+
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Certification Catalog</p>
+        <h2>Build your next technical skill</h2>
+        <p class="intro-text">
+          Explore industry certifications in networking, cloud,
+          virtualization, and cybersecurity.
+        </p>
+      </div>
+    </section>
+
     <section class="controls">
 
-      <input
-        type="text"
-        id="search"
-        placeholder="Search courses..."
-      >
+      <div class="search-wrapper">
+        <label for="search">Search</label>
 
-      <select id="vendor-filter">
-        <option value="">All Vendors</option>
-        <option value="Cisco">Cisco</option>
-        <option value="Microsoft">Microsoft</option>
-        <option value="VMware">VMware</option>
-        <option value="Fortinet">Fortinet</option>
-      </select>
+        <input
+          type="text"
+          id="search"
+          placeholder="Search by course, vendor or exam code..."
+        >
+      </div>
+
+      <div class="filter-wrapper">
+        <label for="vendor-filter">Vendor</label>
+
+        <select id="vendor-filter">
+          <option value="">All Vendors</option>
+          <option value="Cisco">Cisco</option>
+          <option value="Microsoft">Microsoft</option>
+          <option value="VMware">VMware</option>
+          <option value="Fortinet">Fortinet</option>
+        </select>
+      </div>
+
+      <div class="filter-wrapper">
+        <label for="level-filter">Level</label>
+
+        <select id="level-filter">
+          <option value="">All Levels</option>
+          <option value="Fundamentals">Fundamentals</option>
+          <option value="Associate">Associate</option>
+          <option value="Professional">Professional</option>
+          <option value="Expert">Expert</option>
+        </select>
+      </div>
+
+      <div class="filter-wrapper">
+        <label for="category-filter">Category</label>
+
+        <select id="category-filter">
+          <option value="">All Categories</option>
+          <option value="Networking">Networking</option>
+          <option value="Cloud">Cloud</option>
+          <option value="Virtualization">Virtualization</option>
+          <option value="Security">Security</option>
+        </select>
+      </div>
 
     </section>
 
-    <p id="course-count"></p>
+    <section class="results-header">
+      <p id="course-count">Loading courses...</p>
 
-    <section id="course-container">
-      <p>Loading courses...</p>
+      <button id="clear-filters" type="button">
+        Clear filters
+      </button>
     </section>
+
+    <section id="course-container" class="course-grid">
+      <div class="loading-card">
+        Loading courses...
+      </div>
+    </section>
+
   </main>
 
+  <footer>
+    <p>
+      GloryTech Academy • Microservices Course Platform
+    </p>
+  </footer>
+
   <script src="app.js"></script>
+
 </body>
 </html>
