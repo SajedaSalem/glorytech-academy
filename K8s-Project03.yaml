@@ -1,17 +1,13 @@
-# ---------------------------------------------------
 # Namespace for the project
-# ---------------------------------------------------
 apiVersion: v1
 kind: Namespace
 metadata:
   name: glorytech-academy
 
 ---
-
-# ---------------------------------------------------
 # Backend ConfigMap
 # Stores backend configuration as environment variables
-# ---------------------------------------------------
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,10 +18,9 @@ data:
   NODE_ENV: "production"
 
 ---
-# ---------------------------------------------------
 # Backend Deployment
 # Runs the GloryTech Academy Node.js backend
-# ---------------------------------------------------
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,10 +79,9 @@ spec:
               memory: "256Mi"
 
 ---
-# ---------------------------------------------------
 # Backend Service
 # Exposes the backend inside the Kubernetes cluster
-# ---------------------------------------------------
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -105,10 +99,9 @@ spec:
   type: ClusterIP
 
 ---
-# ---------------------------------------------------
 # Frontend nginx ConfigMap
 # Stores nginx reverse-proxy configuration
-# ---------------------------------------------------
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -142,10 +135,9 @@ data:
     }
 
 ---
-# ---------------------------------------------------
 # Frontend Deployment
 # Runs the GloryTech Academy frontend with nginx
-# ---------------------------------------------------
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -211,10 +203,9 @@ spec:
             name: frontend-nginx-conf
 
 ---
-# ---------------------------------------------------
 # Frontend Service
 # Exposes nginx externally using NodePort
-# ---------------------------------------------------
+
 apiVersion: v1
 kind: Service
 metadata:
