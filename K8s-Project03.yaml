@@ -1,0 +1,233 @@
+# ---------------------------------------------------
+# Namespace for the project
+# ---------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: glorytech-academy
+
+---
+
+# ---------------------------------------------------
+# Backend ConfigMap
+# Stores backend configuration as environment variables
+# ---------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace:  glorytech-academy
+data:
+  PORT: "3000"
+  NODE_ENV: "production"
+
+---
+# ---------------------------------------------------
+# Backend Deployment
+# Runs the GloryTech Academy Node.js backend
+# ---------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: glorytech-academy
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+
+      containers:
+        - name: backend
+
+          image: registry.gitlab.com/glorytech-academy1/glorytech-academy .
+
+          ports:
+            - containerPort: 3000
+
+          envFrom:
+            - configMapRef:
+                name: backend-config
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+---
+# ---------------------------------------------------
+# Backend Service
+# Exposes the backend inside the Kubernetes cluster
+# ---------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: glorytech-academy
+
+spec:
+  selector:
+    app: backend
+
+  ports:
+    - port: 3000
+      targetPort: 3000
+
+  type: ClusterIP
+
+---
+# ---------------------------------------------------
+# Frontend nginx ConfigMap
+# Stores nginx reverse-proxy configuration
+# ---------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-nginx-conf
+  namespace: glorytech-academy
+
+data:
+  default.conf: |
+    server {
+        listen 80;
+
+        server_name _;
+
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /api/ {
+            proxy_pass http://backend:3000;
+
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+---
+# ---------------------------------------------------
+# Frontend Deployment
+# Runs the GloryTech Academy frontend with nginx
+# ---------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: glorytech-academy
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+
+      containers:
+        - name: frontend
+
+          image: registry.gitlab.com/glorytech-academy1/glorytech-academy .
+
+          ports:
+            - containerPort: 80
+
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: frontend-nginx-conf
+
+---
+# ---------------------------------------------------
+# Frontend Service
+# Exposes nginx externally using NodePort
+# ---------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: glorytech-academy
+
+spec:
+  selector:
+    app: frontend
+
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30082
+
+  type: NodePort
