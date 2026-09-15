@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GloryTech Academy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>GloryTech Academy</h1>
+    <p>Certification Training Platform</p>
+
+    <div id="backend-status">
+      Checking backend...
+    </div>
+  </header>
+
+  <main>
+    <section class="controls">
+
+      <input
+        type="text"
+        id="search"
+        placeholder="Search courses..."
+      >
+
+      <select id="vendor-filter">
+        <option value="">All Vendors</option>
+        <option value="Cisco">Cisco</option>
+        <option value="Microsoft">Microsoft</option>
+        <option value="VMware">VMware</option>
+        <option value="Fortinet">Fortinet</option>
+      </select>
+
+    </section>
+
+    <p id="course-count"></p>
+
+    <section id="course-container">
+      <p>Loading courses...</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
