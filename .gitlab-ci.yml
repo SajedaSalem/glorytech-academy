@@ -7,9 +7,7 @@ variables:
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA"
   FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA"
 
-# ---------------------------------------------------
 # Build and push Docker images
-# ---------------------------------------------------
 build:
   stage: build
   image: docker:27-cli
@@ -30,9 +28,7 @@ build:
     - docker push "$BACKEND_IMAGE"
     - docker push "$FRONTEND_IMAGE"
 
-# ---------------------------------------------------
 # Run backend automated tests
-# ---------------------------------------------------
 test:
   stage: test
   image: node:24-slim
@@ -42,9 +38,7 @@ test:
     - npm ci
     - npm test
 
-# ---------------------------------------------------
 # Scan backend Docker image with Trivy
-# ---------------------------------------------------
 security_scan:
   stage: security_scan
 
